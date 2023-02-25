@@ -3,6 +3,8 @@ version: '3.7'
 services:
   postgres:
     image: postgres:13.3
+    hostname: postgres
+    container_name: postgres
     ports:
       - 5432:5432
     environment:
@@ -10,20 +12,24 @@ services:
       POSTGRES_PASSWORD: pgpass
       POSTGRES_DB: taxi
 
-  scheduler:
-    image: taxi-scheduler:latest
+  yandex-taxi:
+    image: yandex-taxi:0.0.1-SNAPSHOT
+    hostname: yandex-taxi
+    container_name: yandex-taxi
     ports:
       - 8080:8080
     environment:
-      - YANDEX_CLID=id
-      - YANDEX_APIKEY=key
+      - YANDEX_CLID=<clid>
+      - YANDEX_APIKEY=pdct.1.1.20230219T092431Z.9bc0d204315fb9a8.166df679f8f866d599b39af96e9faba8acfb8fd8
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/taxi
       - SPRING_DATASOURCE_USERNAME=kegisa
       - SPRING_DATASOURCE_PASSWORD=pgpass
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+#      - SPRING_JPA_HIBERNATE_DDL_AUTO=create
 
   prometheus:
     image: prom/prometheus
+    hostname: prometheus
+    container_name: prometheus
     ports:
       - 9090:9090
     volumes:
@@ -31,6 +37,8 @@ services:
 
   grafana:
     image: grafana/grafana
+    hostname: grafana
+    container_name: grafana
     ports:
       - 3000:3000
     environment:

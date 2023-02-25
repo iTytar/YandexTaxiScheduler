@@ -3,19 +3,19 @@ package com.victorlevin.yandextaxischeduler.service;
 import com.victorlevin.yandextaxischeduler.apiclient.TaxiApiClient;
 import com.victorlevin.yandextaxischeduler.model.Coordinate;
 import com.victorlevin.yandextaxischeduler.model.MomentPrice;
+import com.victorlevin.yandextaxischeduler.model.Option;
 import com.victorlevin.yandextaxischeduler.model.Price;
 import com.victorlevin.yandextaxischeduler.properties.YandexProperties;
 import com.victorlevin.yandextaxischeduler.repository.PriceRepository;
-import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.MeterRegistry;
-import lombok.RequiredArgsConstructor;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -35,10 +35,12 @@ public class TaxiService {
     }
 
     @Transactional
+    @Timed("gettingPriceFromClient")
     public void getPrice(Coordinate startPoint, Coordinate endPoint) {
         String rll = startPoint.toString() + "~" + endPoint.toString();
 
-        Price currentPrice = taxiApiClient.getPrice(yandexProperties.getClid(), yandexProperties.getApiKey(), rll);
+//        Price currentPrice = taxiApiClient.getPrice(yandexProperties.getClid(), yandexProperties.getApiKey(), rll);
+        Price currentPrice = getPrice();
         if(currentPrice.options.isEmpty()) {
             throw new RuntimeException("options null");
         }
@@ -55,4 +57,21 @@ public class TaxiService {
     public List<MomentPrice> getAllPrices() {
         return priceRepository.findAll();
     }
+    
+    private Price getPrice() {
+        final double min = 240.0;
+        final double max = 580.0;
+        Random random = new Random();
+
+        try {
+            Thread.sleep(random.nextLong(100L, 500L));
+        } catch (InterruptedException ex) {
+        }
+        Option option = new Option();
+        option.setPrice(random.nextDouble(min, max));
+        Price price = new Price();
+        price.setOptions(List.of(option));
+        return price;
+    }
+    
 }
